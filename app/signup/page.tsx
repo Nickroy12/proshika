@@ -2,29 +2,94 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import {
+  createUserWithEmailAndPassword,
+  updateProfile,
+} from "firebase/auth";
+import { auth } from "@/lib/firebase";
 
 export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) =>{
-    e.preventDefault()
-  const formData = new FormData(e.currentTarget);
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError("");
 
-  const name = formData.get("name");
-  const email = formData.get("email");
-  const password = formData.get("password");
-  const confirmPassword = formData.get("confirmPassword");
+    const formData = new FormData(e.currentTarget);
 
-  console.log(name);
-  console.log(email);
-  console.log(password);
-  console.log(confirmPassword);
-  }
+    const name = formData.get("name") as string;
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+    const confirmPassword = formData.get("confirmPassword") as string;
+
+    // Confirm password check
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      // Create Firebase account
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+
+      // Save user's name
+      await updateProfile(userCredential.user, {
+        displayName: name,
+      });
+
+      console.log("User created:", userCredential.user);
+
+      // Go to login page
+      window.location.href = "/login";
+    } catch (error: any) {
+      console.error(error);
+
+      switch (error.code) {
+        case "auth/email-already-in-use":
+          setError("This email is already registered.");
+          break;
+
+        case "auth/invalid-email":
+          setError("Please enter a valid email address.");
+          break;
+
+        case "auth/weak-password":
+          setError("Password must be at least 6 characters.");
+          break;
+
+        case "auth/network-request-failed":
+          setError(
+            "Network error. Please check your internet connection."
+          );
+          break;
+
+        case "auth/operation-not-allowed":
+          setError(
+            "Email/password authentication is not enabled in Firebase."
+          );
+          break;
+
+        default:
+          setError("Something went wrong. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <main className="min-h-screen bg-[#fffaf7] px-5 py-10">
       <div className="mx-auto flex min-h-screen max-w-md items-center justify-center">
         <div className="w-full rounded-2xl bg-white p-6 shadow-xl sm:p-8">
+
           {/* Logo */}
           <div className="mb-8 text-center">
             <Link
@@ -51,6 +116,7 @@ export default function SignUp() {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
+
             {/* Name */}
             <div>
               <label
@@ -134,14 +200,23 @@ export default function SignUp() {
                 type="password"
                 placeholder="Confirm your password"
                 required
+                minLength={6}
                 className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-[#E87942] focus:ring-2 focus:ring-[#E87942]/20"
               />
             </div>
+
+            {/* Error */}
+            {error && (
+              <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">
+                {error}
+              </div>
+            )}
 
             {/* Terms */}
             <div className="flex items-start gap-2">
               <input
                 id="terms"
+                name="terms"
                 type="checkbox"
                 required
                 className="mt-1 h-4 w-4 accent-[#E87942]"
@@ -164,9 +239,10 @@ export default function SignUp() {
             {/* Sign Up Button */}
             <button
               type="submit"
-              className="w-full rounded-lg bg-gradient-to-r from-[#D85F35] to-[#F5965A] py-3 font-semibold text-white shadow-md transition-all duration-300 hover:scale-[1.01] hover:shadow-lg"
+              disabled={loading}
+              className="w-full rounded-lg bg-gradient-to-r from-[#D85F35] to-[#F5965A] py-3 font-semibold text-white shadow-md transition-all duration-300 hover:scale-[1.01] hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Create Account
+              {loading ? "Creating Account..." : "Create Account"}
             </button>
           </form>
 
@@ -185,3 +261,4 @@ export default function SignUp() {
     </main>
   );
 }
+
