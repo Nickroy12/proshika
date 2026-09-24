@@ -2,11 +2,6 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import {
-  createUserWithEmailAndPassword,
-  updateProfile,
-} from "firebase/auth";
-import { auth } from "@/lib/firebase";
 
 export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
@@ -18,7 +13,6 @@ export default function SignUp() {
     setError("");
 
     const formData = new FormData(e.currentTarget);
-
     const name = formData.get("name") as string;
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
@@ -32,54 +26,12 @@ export default function SignUp() {
 
     try {
       setLoading(true);
-
-      // Create Firebase account
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-
-      // Save user's name
-      await updateProfile(userCredential.user, {
-        displayName: name,
-      });
-
-      console.log("User created:", userCredential.user);
-
-      // Go to login page
+      // Placeholder submission logic
+      console.log("Account creation submitted for:", { name, email });
       window.location.href = "/login";
-    } catch (error: any) {
-      console.error(error);
-
-      switch (error.code) {
-        case "auth/email-already-in-use":
-          setError("This email is already registered.");
-          break;
-
-        case "auth/invalid-email":
-          setError("Please enter a valid email address.");
-          break;
-
-        case "auth/weak-password":
-          setError("Password must be at least 6 characters.");
-          break;
-
-        case "auth/network-request-failed":
-          setError(
-            "Network error. Please check your internet connection."
-          );
-          break;
-
-        case "auth/operation-not-allowed":
-          setError(
-            "Email/password authentication is not enabled in Firebase."
-          );
-          break;
-
-        default:
-          setError("Something went wrong. Please try again.");
-      }
+    } catch (err) {
+      console.error(err);
+      setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -89,7 +41,6 @@ export default function SignUp() {
     <main className="min-h-screen bg-[#fffaf7] px-5 py-10">
       <div className="mx-auto flex min-h-screen max-w-md items-center justify-center">
         <div className="w-full rounded-2xl bg-white p-6 shadow-xl sm:p-8">
-
           {/* Logo */}
           <div className="mb-8 text-center">
             <Link
@@ -116,7 +67,6 @@ export default function SignUp() {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
-
             {/* Name */}
             <div>
               <label
@@ -261,4 +211,3 @@ export default function SignUp() {
     </main>
   );
 }
-
