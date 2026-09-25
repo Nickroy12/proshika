@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { useState } from "react";
 
 export default function Login() {
@@ -20,7 +21,7 @@ export default function Login() {
       setLoading(true);
       // Placeholder authentication logic
       console.log("Login submitted for:", { email });
-      window.location.href = "/";
+      redirect('/')
     } catch (err) {
       console.error("Login error:", err);
       setError("Something went wrong. Please try again.");
