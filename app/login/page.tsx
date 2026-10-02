@@ -1,10 +1,13 @@
 "use client";
 
+import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function Login() {
+  const router = useRouter();
+
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -14,14 +17,26 @@ export default function Login() {
     setError("");
 
     const formData = new FormData(e.currentTarget);
+
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
 
     try {
       setLoading(true);
-      // Placeholder authentication logic
-      console.log("Login submitted for:", { email });
-      redirect('/')
+
+      const { data, error } = await authClient.signIn.email({
+        email,
+        password,
+      });
+
+      if (error) {
+        setError(error.message || "Invalid email or password.");
+        return;
+      }
+
+      console.log("Login successful:", data);
+
+      router.push("/");
     } catch (err) {
       console.error("Login error:", err);
       setError("Something went wrong. Please try again.");

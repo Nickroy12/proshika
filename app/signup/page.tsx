@@ -1,9 +1,13 @@
 "use client";
 
+import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function SignUp() {
+  const router = useRouter();
+
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -13,12 +17,12 @@ export default function SignUp() {
     setError("");
 
     const formData = new FormData(e.currentTarget);
+
     const name = formData.get("name") as string;
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
     const confirmPassword = formData.get("confirmPassword") as string;
 
-    // Confirm password check
     if (password !== confirmPassword) {
       setError("Passwords do not match.");
       return;
@@ -26,11 +30,23 @@ export default function SignUp() {
 
     try {
       setLoading(true);
-      // Placeholder submission logic
-      console.log("Account creation submitted for:", { name, email });
-      window.location.href = "/login";
+
+      const { data, error } = await authClient.signUp.email({
+        name,
+        email,
+        password,
+      });
+
+      if (error) {
+        setError(error.message || "Failed to create account.");
+        return;
+      }
+
+      console.log("Account created successfully:", data);
+
+      router.push("/");
     } catch (err) {
-      console.error(err);
+      console.error("Signup error:", err);
       setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
@@ -211,3 +227,4 @@ export default function SignUp() {
     </main>
   );
 }
+
