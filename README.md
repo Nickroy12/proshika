@@ -1,4 +1,4 @@
-# 📊 Expense Tracker & Finance Manager (গোরগৃহ / Proshikha)
+# 📊 Expense Tracker & Finance Manager 
 
 একটি আধুনিক ফুলস্ট্যাক **Next.js (App Router)** প্রজেক্ট, যেখানে ডাটাবেজ পরিচালনার জন্য **Mongoose (MongoDB)** এবং গ্লোবাল স্টেট ম্যানেজমেন্টের জন্য **Redux Toolkit (RTK)** ব্যবহার করা হয়েছে।
 
